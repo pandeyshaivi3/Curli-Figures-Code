@@ -1,0 +1,125 @@
+# Load necessary library
+if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
+library(ggplot2)
+
+# Map Arial for Windows graphics device
+windowsFonts(Arial = windowsFont("Arial"))
+
+# Define strains and temperatures
+strains <- c(3, 8, 9, 32, 33, 35, 40, 43, 66, 70, 71, 72, 84, 88, 99, 
+             115, 121, 124, 132, 141, 155, 175, 178, 187, 198, 211, 237, 
+             238, 274, 278, 291, 308, 366, 422, 428, 446, 447, 457, 471, 
+             506, 509, 518, 538, 548, 617, 619, 748, 888, 906, 907, "CFT073")
+temperatures <- c("37", "30")
+
+# Lightness values from the Excel file (order matches strains for each temperature)
+lightness_37 <- c(
+  0.547, 0.564, 0.515, 0.479, 0.605, 0.538, 0.426, 0.397, 0.553, 0.550, 0.534, 0.595,
+  0.508, 0.544, 0.463, 0.568, 0.537, 0.421, 0.511, 0.573, 0.526, 0.559, 0.492, 0.482,
+  0.574, 0.520, 0.493, 0.563, 0.492, 0.538, 0.523, 0.604, 0.451, 0.501, 0.530, 0.551,
+  0.577, 0.487, 0.569, 0.495, 0.462, 0.499, 0.362, 0.482, 0.521, 0.489, 0.534, 0.428,
+  0.432, 0.437, 0.539
+)
+
+lightness_30 <- c(
+  0.484, 0.596, 0.481, 0.438, 0.637, 0.591, 0.417, 0.371, 0.563, 0.601, 0.496, 0.620,
+  0.558, 0.602, 0.470, 0.573, 0.558, 0.423, 0.488, 0.610, 0.542, 0.573, 0.468, 0.458,
+  0.595, 0.534, 0.477, 0.588, 0.416, 0.482, 0.525, 0.623, 0.454, 0.524, 0.524, 0.613,
+  0.601, 0.478, 0.577, 0.476, 0.466, 0.542, 0.361, 0.489, 0.582, 0.536, 0.500, 0.408,
+  0.418, 0.399, 0.607
+)
+
+# Combine lightness
+lightness_vals <- c(lightness_37, lightness_30)
+
+# Hex codes
+hex_codes_37 <- c(
+  "#f12f25", "#f63c29", "#f12118", "#d71d1f", "#f5513f", "#f24b35",
+  "#bd2525", "#b21f21", "#f82b22", "#f83b24", "#f24937", "#fa170c",
+  "#e94031", "#f64f39", "#cc2525", "#e55641", "#f3523c", "#ad2124",
+  "#e73d2f", "#ed5d48", "#e23f37", "#f84338", "#f12610", "#d63331",
+  "#ee5546", "#e3402e", "#e82621", "#da4a3b", "#f63318", "#f44c3c",
+  "#f4462d", "#f76b53", "#d0191b", "#f1351d", "#f04934", "#e64b3f",
+  "#f55535", "#eb2916", "#f65a45", "#e82621", "#cd2627", "#e02a2a",
+  "#9c1d20", "#e22021", "#e44638", "#df332c", "#f24030", "#ae2024",
+  "#b51e21", "#b52022", "#f04e37"
+)
+
+hex_codes_30 <- c(
+  "#ca312d", "#ef5f40", "#cf2c28", "#bc2725", "#eb725a", "#e6654d",
+  "#a12727", "#891b1b", "#ec5245", "#f94c32", "#e8281e", "#ee1c0d",
+  "#ec583e", "#f25135", "#c82d2b", "#e85942", "#ef5134", "#ac2526",
+  "#d44034", "#f45938", "#e64437", "#ea3a32", "#d12226", "#c53133",
+  "#f15d47", "#e25139", "#de2f2d", "#e96149", "#c5090f", "#c43435",
+  "#e54434", "#f47453", "#b31f22", "#eb3b26", "#e9382f", "#e7765f",
+  "#f15b3a", "#c52e2b", "#ed563e", "#c82123", "#c53a3b", "#e5413b",
+  "#941f21", "#d02f31", "#ed674f", "#e84b3d", "#e02424", "#962020",
+  "#bd2020", "#a91e21", "#f45436"
+)
+
+hex_codes <- c(hex_codes_37, hex_codes_30)
+
+# Data frame
+plot_data <- data.frame(
+  Strain = factor(rep(strains, times = 2), levels = rev(strains)),
+  Temperature = factor(rep(c("37", "30"), each = length(strains)), levels = c("30", "37")),
+  Hex = hex_codes,
+  Lightness = lightness_vals
+)
+
+# Add numeric x positions to bring columns closer together
+plot_data$Temp_num <- ifelse(plot_data$Temperature == "37", 1, 1.35)
+
+
+
+# Plot
+p <- ggplot(plot_data, aes(x = Temp_num, y = Strain, fill = Hex)) +
+  geom_tile(
+    color = "white",
+    linewidth = 0.2,
+    width = 0.35,
+    height = 1.0
+  ) +
+  geom_text(
+    aes(label = Lightness),
+    color = "white",
+    size = 3,
+    family = "Arial"
+  ) +
+  scale_fill_identity() +
+  scale_x_continuous(
+    breaks = c(1, 1.35),
+    labels = c("37", "30"),
+    expand = c(0.01, 0.01)
+  ) +
+  scale_y_discrete(expand = c(0, 0)) +
+  labs(
+    x = "Temperature (°C)",
+    y = "Strains",
+    title = "HSL Lightness (CR)"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    text = element_text(family = "Arial"),
+    axis.title.x = element_text(face = "bold", size = 12, color = "black"),
+    axis.title.y = element_text(face = "bold", size = 12, color = "black", margin = margin(r = -18)),
+    axis.text.x  = element_text(size = 10, face = "bold", color = "black"),
+    axis.text.y  = element_text(size = 10, face = "bold", color = "black", margin = margin(r = -10)),
+    plot.title   = element_text(size = 14, face = "bold", hjust = 0.5, color = "black", margin = margin(b = 2)),
+    panel.grid   = element_blank(),
+    plot.margin  = margin(2, 2, 2, 2)
+  ) +
+  coord_fixed(ratio = 0.10)
+
+# Display
+p
+
+# Save
+ggsave("newestlightnesscr.png",
+       plot = p,
+       dpi = 600,
+       width = 3,
+       height = 9,
+       units = "in")
+
+
